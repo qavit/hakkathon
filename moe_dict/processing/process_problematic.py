@@ -38,8 +38,8 @@ def process_sentences(input_file, output_file):
         json.dump(processed_entries, f, ensure_ascii=False, indent=2)
 
 # Define input and output files
-input_file = "processed_problematic_sentences.json"
-output_file = "pp_sentences.json"
+input_file = "problematic_sentences_1.json"
+output_file = "processed_problematic_sentences_1.json"
 
 # Run the processing function
 process_sentences(input_file, output_file)

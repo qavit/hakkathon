@@ -1,51 +1,43 @@
 import json
 from tqdm import tqdm
 
-def merge_and_filter_json(file1, file2, output_file):
-    # Load both JSON files
-    with open(file1, 'r', encoding='utf-8') as f1, open(file2, 'r', encoding='utf-8') as f2:
-        data1 = json.load(f1)
-        data2 = json.load(f2)
+def load_and_merge_json(file1, file2, output_file):
+    # Load data from both JSON files
+    with open(file1, 'r', encoding='utf-8') as f:
+        data1 = json.load(f)
+    with open(file2, 'r', encoding='utf-8') as f:
+        data2 = json.load(f)
     
-    # Combine the data
+    # Merge data and sort by `dict_id`
     combined_data = data1 + data2
-    print(f"Total entries after merging: {len(combined_data)}")
-
-    # Sort by dict_id
-    combined_data.sort(key=lambda x: x['dict_id'])
+    combined_data.sort(key=lambda x: x["dict_id"])
     
-    # Track seen hak_ex entries and filter duplicates
+    # Remove duplicates and store repeated entries
     unique_entries = []
-    seen_hak_ex = set()
     duplicates = []
+    seen_entries = set()  # Using set to track unique (hak_ex, zh_ex) pairs
 
-    for entry in tqdm(combined_data, desc="Filtering duplicates"):
-        hak_ex = entry["hak_ex"]
-        
-        # If hak_ex is already seen, consider it a duplicate
-        if hak_ex in seen_hak_ex:
-            duplicates.append(entry)  # Store duplicates for printing
+    for entry in tqdm(combined_data, desc="Processing entries"):
+        entry_pair = (entry["hak_ex"], entry["zh_ex"])
+        if entry_pair in seen_entries:
+            duplicates.append(entry)  # Log duplicate entry
         else:
-            seen_hak_ex.add(hak_ex)
+            seen_entries.add(entry_pair)
             unique_entries.append(entry)
 
-    # Print the number of unique entries and duplicates
-    print(f"Unique entries: {len(unique_entries)}")
-    print(f"Duplicate entries: {len(duplicates)}")
-
-    # Print duplicates
-    print("Duplicate entries based on hak_ex:")
+    # Output duplicates
+    print("Duplicate entries found:")
     for duplicate in duplicates:
         print(duplicate)
 
-    # Save the unique sorted entries to the output file
+    # Save the unique entries to the output file
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(unique_entries, f, ensure_ascii=False, indent=2)
 
-# Define file paths
-file1 = "filtered_example_sentences.json"
-file2 = "processed_problematic_sentences.json"
-output_file = "merged_unique_sentences.json"
+# Define input and output files
+file1 = "filtered_example_sentences_1.json"
+file2 = "processed_problematic_sentences_1.json"
+output_file = "merged_sorted_unique_sentences.json"
 
-# Run the merging and filtering function
-merge_and_filter_json(file1, file2, output_file)
+# Run the function
+load_and_merge_json(file1, file2, output_file)
